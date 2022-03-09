@@ -1,4 +1,4 @@
-name: Build and push the latest version
+name: "CI-CD_with_Helm"
 
 on:
   push:
