@@ -1,0 +1,6 @@
+image:
+  repository: contosocontainerregistry5320.azurecr.io
+  name: index-app
+  tag: e3cf4128727bd3f221b20d8ebfc0861f892e543c
+
+namespace: index-app-ns

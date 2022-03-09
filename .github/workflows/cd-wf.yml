@@ -60,44 +60,72 @@ jobs:
       with:
         version: v3.3.1
 
-    - name: Run Helm Deploy
+    # - name: Run Helm Deploy
+    #   run: |
+    #     helm upgrade \
+    #       --install \
+    #       --create-namespace \
+    #       --atomic \
+    #       --wait \
+    #       --namespace ${{ env.NAMESPACE }} \
+    #       index-app \
+    #       ./helm-charts/index-app \
+    #       --set namespace=${{ env.NAMESPACE }} \
+    #       --set image.repository=${{ secrets.ACR_URL }} \
+    #       --set image.name=${{ env.IMAGE_NAME }} \
+    #       --set image.tag=${{ github.sha }} 
+
+    - name: Helm Dry Run
       run: |
         helm upgrade \
-          --install \
-          --create-namespace \
-          --atomic \
-          --wait \
-          --namespace ${{ env.NAMESPACE }} \
-          index-app \
-          ./helm-charts/index-app \
-          --set namespace=${{ env.NAMESPACE }} \
-          --set image.repository=${{ secrets.ACR_URL }} \
-          --set image.name=${{ env.IMAGE_NAME }} \
-          --set image.tag=${{ github.sha }}    
+            --dry-run \
+            --install \
+            --create-namespace \
+            --namespace index-app-ns \
+            --atomic \
+            --wait \
+            -f ./helm-charts/index-app/values_overwrite.yaml \
+            index-app \
+            ./helm-charts/index-app
 
+    - name: Helm Package
+      run: |
+        helm package \
+            --dependency-update \
+            --app-version 1.0.0-${{ github.sha }} \
+            --version 1.0-${{ github.sha }} \
+            ./helm-charts/index-app
 
+    - name: Authenticate with the registry
+      run: |
+        helm registry login \
+            contosocontainerregistry5320.azurecr.io \
+            --username ContosoContainerRegistry5320 \
+            --password kSlRJs=8SKUXe50jUBoGiYFod086webv
 
-    ### Deploy with k8s-bake and k8s-deploy actions
+    - name: Push chart to registry as OCI artifact
+      run: |
+        helm push \
+        index-app-1.0-${{ github.sha }}.tgz \
+        oci://contosocontainerregistry5320.azurecr.io/helm
 
-    # - uses: azure/k8s-bake@v2
-    #   with:
-    #     renderEngine: "helm"
-    #     helmChart: "./helm-charts/index-app"
-    #     overrides: |
-    #       namespace:${{ env.NAMESPACE }}
-    #       image.repository:${{ secrets.ACR_URL }}
-    #       image.name:${{ env.IMAGE_NAME }}
-    #       image.tag:${{ github.sha }}
-    #     helm-version: "latest"
-    #   id: bake
+    - name: List charts in the repository
+      run: |
+        az acr repository show \
+          --name contosocontainerregistry5320 \
+          --repository helm/index-app
 
-    # - name: "Deploy application on AKS"
-    #   uses: Azure/k8s-deploy@v1.2
-    #   with:
-    #     action: deploy
-    #     namespace: ${{env.NAMESPACE}}
-    #     manifests: ${{ steps.bake.outputs.manifestsBundle }}
-    #     images: |
-    #       ${{secrets.ACR_URL}}/${{env.IMAGE_NAME}}:${{ github.sha }}
-    #     imagepullsecrets: |
-    #       acr-secret
+    - name: Install / Upgrade helm chart
+      run: |
+        helm upgrade \
+            --install \
+            --create-namespace \
+            --namespace index-app-ns \
+            --atomic \
+            --wait \
+            index-app \
+            oci://contosocontainerregistry5320.azurecr.io/helm/index-app --version 1.0-${{ github.sha }}
+
+    # - name: Description
+    #   run: |
+    #     <command>
