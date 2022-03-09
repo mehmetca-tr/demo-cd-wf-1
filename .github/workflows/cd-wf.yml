@@ -110,12 +110,6 @@ jobs:
         index-app-1.0-${{ github.sha }}.tgz \
         oci://contosocontainerregistry5320.azurecr.io/helm
 
-    - name: List charts in the repository
-      run: |
-        az acr repository show \
-          --name contosocontainerregistry5320 \
-          --repository helm/index-app
-
     - name: Install / Upgrade helm chart
       run: |
         helm upgrade \
