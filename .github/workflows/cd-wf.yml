@@ -100,7 +100,7 @@ jobs:
             --dependency-update \
             --app-version ${{ env.APP_VERSION }} \
             --version ${{ env.HELM_CHART_VERSION }} \
-            ./helm-charts/${{ env.HELM_CHART_NAME }} \
+            ./helm-charts/${{ env.HELM_CHART_NAME }}
 
     - name: Authenticate with the registry
       run: |
