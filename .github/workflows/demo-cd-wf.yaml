@@ -68,22 +68,22 @@ jobs:
 
       # HELM COMMANDS
 
-      - name: Install Helm
-        uses: Azure/setup-helm@v1
-        with:
-          version: v3.3.1
+    - name: Install Helm
+      uses: Azure/setup-helm@v1
+      with:
+        version: v3.3.1
 
-      - name: Run Helm Deploy
-        run: |
-          helm upgrade \
-            --install \
-            --create-namespace \
-            --atomic \
-            --wait \
-            --namespace ${{ env.NAMESPACE }} \
-            index-app \
-            ./helm-charts/index-app \
-            --set namespace=${{ env.NAMESPACE }} \
-            --set image.repository=${{ secrets.ACR_URL }} \
-            --set image.name=${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ github.sha }}
+    - name: Run Helm Deploy
+      run: |
+        helm upgrade \
+          --install \
+          --create-namespace \
+          --atomic \
+          --wait \
+          --namespace ${{ env.NAMESPACE }} \
+          index-app \
+          ./helm-charts/index-app \
+          --set namespace=${{ env.NAMESPACE }} \
+          --set image.repository=${{ secrets.ACR_URL }} \
+          --set image.name=${{ env.IMAGE_NAME }} \
+          --set image.tag=${{ github.sha }}
