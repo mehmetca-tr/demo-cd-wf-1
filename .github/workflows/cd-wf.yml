@@ -125,6 +125,10 @@ jobs:
             --wait \
             ${{ env.HELM_CHART_NAME }} \
             oci://${{ secrets.ACR_URL }}/helm/${{ env.HELM_CHART_NAME }} --version ${{ env.HELM_CHART_VERSION }}
+            --set namespace=${{ env.NAMESPACE }} \
+            --set image.repository=${{ secrets.ACR_URL }} \
+            --set image.name=${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} 
 
     # - name: Description
     #   run: |
