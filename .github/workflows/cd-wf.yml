@@ -61,8 +61,8 @@ jobs:
         helmChart: "./helm-charts/index-app"
         overrides: |
           namespace:${{ env.NAMESPACE }}
-          image.repository:${{secrets.ACR_URL}}
-          image.name:${{env.IMAGE_NAME}}
+          image.repository:${{ secrets.ACR_URL }}
+          image.name:${{ env.IMAGE_NAME }}
           image.tag:${{ github.sha }}
         helm-version: "latest"
       id: bake
