@@ -21,6 +21,9 @@ env:
   RESOURCE_GROUP: mslearn-gh-pipelines-5163
   NAMESPACE: index-app-ns
   IMAGE_NAME: index-app
+  HELM_CHART_NAME: index-app
+  APP_VERSION: 1.0.0-${{ github.sha }}
+  HELM_CHART_VERSION: 1.0-${{ github.sha }}
 
 jobs:
   build:
@@ -81,45 +84,51 @@ jobs:
             --dry-run \
             --install \
             --create-namespace \
-            --namespace index-app-ns \
+            --namespace ${{ env.NAMESPACE }} \
             --atomic \
             --wait \
-            -f ./helm-charts/index-app/values_overwrite.yaml \
-            index-app \
-            ./helm-charts/index-app
+            ${{ env.HELM_CHART_NAME }} \
+            ./helm-charts/${{ env.HELM_CHART_NAME }}
+            --set namespace=${{ env.NAMESPACE }} \
+            --set image.repository=${{ secrets.ACR_URL }} \
+            --set image.name=${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} 
 
     - name: Helm Package
       run: |
         helm package \
             --dependency-update \
-            --app-version 1.0.0-${{ github.sha }} \
-            --version 1.0-${{ github.sha }} \
-            ./helm-charts/index-app
+            --app-version ${{ env.APP_VERSION }} \
+            --version ${{ env.HELM_CHART_VERSION }} \
+            ./helm-charts/${{ env.HELM_CHART_NAME }} \
+            --set namespace=${{ env.NAMESPACE }} \
+            --set image.repository=${{ secrets.ACR_URL }} \
+            --set image.name=${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} 
 
     - name: Authenticate with the registry
       run: |
-        export HELM_EXPERIMENTAL_OCI=1
         helm registry login \
-            contosocontainerregistry5320.azurecr.io \
-            --username ContosoContainerRegistry5320 \
-            --password kSlRJs=8SKUXe50jUBoGiYFod086webv
+            ${{ secrets.ACR_URL }} \
+            --username ${{ secrets.ACR_USERNAME }} \
+            --password ${{ secrets.ACR_PASSWORD }}
 
     - name: Push chart to registry as OCI artifact
       run: |
         helm push \
-        index-app-1.0-${{ github.sha }}.tgz \
-        oci://contosocontainerregistry5320.azurecr.io/helm
+        ${{ env.HELM_CHART_NAME }}-${{ env.HELM_CHART_VERSION }}.tgz \
+        oci://${{ secrets.ACR_URL }}/helm
 
     - name: Install / Upgrade helm chart
       run: |
         helm upgrade \
             --install \
             --create-namespace \
-            --namespace index-app-ns \
+            --namespace ${{ env.NAMESPACE }} \
             --atomic \
             --wait \
-            index-app \
-            oci://contosocontainerregistry5320.azurecr.io/helm/index-app --version 1.0-${{ github.sha }}
+            ${{ env.HELM_CHART_NAME }} \
+            oci://${{ secrets.ACR_URL }}/helm/${{ env.HELM_CHART_NAME }} --version ${{ env.HELM_CHART_VERSION }}
 
     # - name: Description
     #   run: |
