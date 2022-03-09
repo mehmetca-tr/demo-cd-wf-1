@@ -1,9 +1,20 @@
 name: "CI-CD_with_Helm"
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
+
+  workflow_dispatch:
+    # ${{ github.event.inputs.ImageVersion }}
+    inputs:
+      ImageVersion:
+        description: 'Image Version :'     
+        #required: true
+      
+      # HelmVersion:
+      #   description: 'Helm Version :'     
+      #   required: true
 
 env:
   CLUSTER_NAME: contoso-video
@@ -77,3 +88,25 @@ jobs:
           ${{secrets.ACR_URL}}/${{env.IMAGE_NAME}}:${{ github.sha }}
         imagepullsecrets: |
           acr-secret
+
+      # HELM COMMANDS
+
+      # - name: Install Helm
+      #   uses: Azure/setup-helm@v1
+      #   with:
+      #     version: v3.3.1
+
+      # - name: Run Helm Deploy
+      #   run: |
+      #     helm upgrade \
+      #       --install \
+      #       --create-namespace \
+      #       --atomic \
+      #       --wait \
+      #       --namespace app-ns \
+      #       index-app \
+      #       ./helm-charts/index-app \
+      #       --set namespace=${{ env.NAMESPACE }} \
+      #       --set image.repository=${{ secrets.ACR_URL }} \
+      #       --set image.name=${{ env.IMAGE_NAME }} \
+      #       --set image.tag=${{ github.sha }}
