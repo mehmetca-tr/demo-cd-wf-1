@@ -1,0 +1,89 @@
+name: "CI-CD_with_Helm"
+
+on:
+  # push:
+  #   branches:
+  #     - main
+
+  workflow_dispatch:
+    # ${{ github.event.inputs.ImageVersion }}
+    inputs:
+      ImageVersion:
+        description: 'Image Version :'     
+        #required: true
+      
+      # HelmVersion:
+      #   description: 'Helm Version :'     
+      #   required: true
+
+env:
+  CLUSTER_NAME: contoso-video
+  RESOURCE_GROUP: mslearn-gh-pipelines-5163
+  NAMESPACE: app-ns
+  IMAGE_NAME: index-app
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@master
+    
+    - uses: Azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_URL }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+    
+    - name: "Build and push to container registry"
+      run: |
+        docker build . -t ${{ secrets.ACR_URL }}/${{env.IMAGE_NAME}}:${{ github.sha }}
+        docker push ${{ secrets.ACR_URL }}/${{env.IMAGE_NAME}}:${{ github.sha }}
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Get code from github repo"
+      uses: actions/checkout@master
+
+    - name: "Set the target AKS cluster"
+      uses: Azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.RESOURCE_GROUP }}
+  
+    # # Create namespace if doesn't exist
+    # - run: |
+    #     kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
+
+    - name: "Create container registry image pull secret"
+      uses: Azure/k8s-create-secret@v1
+      with:
+        container-registry-url: ${{ secrets.ACR_URL }}
+        container-registry-username: ${{ secrets.ACR_USERNAME }}
+        container-registry-password: ${{ secrets.ACR_PASSWORD }}
+        secret-name: acr-secret
+        namespace: ${{env.NAMESPACE}}
+
+      # HELM COMMANDS
+
+      - name: Install Helm
+        uses: Azure/setup-helm@v1
+        with:
+          version: v3.3.1
+
+      - name: Run Helm Deploy
+        run: |
+          helm upgrade \
+            --install \
+            --create-namespace \
+            --atomic \
+            --wait \
+            --namespace ${{ env.NAMESPACE }} \
+            index-app \
+            ./helm-charts/index-app \
+            --set namespace=${{ env.NAMESPACE }} \
+            --set image.repository=${{ secrets.ACR_URL }} \
+            --set image.name=${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }}
