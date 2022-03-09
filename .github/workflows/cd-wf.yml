@@ -56,7 +56,7 @@ jobs:
     # # Create namespace if doesn't exist
     # - run: |
     #     kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
-
+    
     - name: "Create container registry image pull secret"
       uses: Azure/k8s-create-secret@v1
       with:
