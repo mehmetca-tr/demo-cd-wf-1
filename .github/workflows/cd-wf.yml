@@ -101,10 +101,6 @@ jobs:
             --app-version ${{ env.APP_VERSION }} \
             --version ${{ env.HELM_CHART_VERSION }} \
             ./helm-charts/${{ env.HELM_CHART_NAME }} \
-            --set namespace=${{ env.NAMESPACE }} \
-            --set image.repository=${{ secrets.ACR_URL }} \
-            --set image.name=${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ github.sha }} 
 
     - name: Authenticate with the registry
       run: |
