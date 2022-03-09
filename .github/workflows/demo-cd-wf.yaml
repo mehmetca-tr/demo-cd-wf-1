@@ -12,9 +12,9 @@ on:
         description: 'Image Version :'     
         #required: true
       
-      # HelmVersion:
-      #   description: 'Helm Version :'     
-      #   required: true
+      HelmVersion:
+        description: 'Helm Version :'     
+        #required: true
 
 env:
   CLUSTER_NAME: contoso-video
