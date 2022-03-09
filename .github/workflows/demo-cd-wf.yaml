@@ -57,14 +57,14 @@ jobs:
     # - run: |
     #     kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
 
-    - name: "Create container registry image pull secret"
-      uses: Azure/k8s-create-secret@v1
-      with:
-        container-registry-url: ${{ secrets.ACR_URL }}
-        container-registry-username: ${{ secrets.ACR_USERNAME }}
-        container-registry-password: ${{ secrets.ACR_PASSWORD }}
-        secret-name: acr-secret
-        namespace: ${{env.NAMESPACE}}
+    # - name: "Create container registry image pull secret"
+    #   uses: Azure/k8s-create-secret@v1
+    #   with:
+    #     container-registry-url: ${{ secrets.ACR_URL }}
+    #     container-registry-username: ${{ secrets.ACR_USERNAME }}
+    #     container-registry-password: ${{ secrets.ACR_PASSWORD }}
+    #     secret-name: acr-secret
+    #     namespace: ${{env.NAMESPACE}}
 
       # HELM COMMANDS
 
