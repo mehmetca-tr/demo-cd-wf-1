@@ -1,4 +1,4 @@
-name: "CI-CD_with_Helm"
+name: "CI-CD-Workflow-with-Helm"
 
 on:
   # push:
@@ -6,11 +6,11 @@ on:
   #     - main
 
   workflow_dispatch:
-    # ${{ github.event.inputs.ImageVersion }}
     inputs:
       ImageVersion:
         description: 'Image Version :'     
         #required: true
+    ### USAGE: ${{ github.event.inputs.ImageVersion }} ###
       
       HelmVersion:
         description: 'Helm Version :'     
@@ -63,21 +63,6 @@ jobs:
       with:
         version: v3.8.0
 
-    # - name: Run Helm Deploy
-    #   run: |
-    #     helm upgrade \
-    #       --install \
-    #       --create-namespace \
-    #       --atomic \
-    #       --wait \
-    #       --namespace ${{ env.NAMESPACE }} \
-    #       index-app \
-    #       ./helm-charts/index-app \
-    #       --set namespace=${{ env.NAMESPACE }} \
-    #       --set image.repository=${{ secrets.ACR_URL }} \
-    #       --set image.name=${{ env.IMAGE_NAME }} \
-    #       --set image.tag=${{ github.sha }} 
-
     - name: Helm Dry Run
       run: |
         helm upgrade \
@@ -129,7 +114,3 @@ jobs:
             --set image.repository=${{ secrets.ACR_URL }} \
             --set image.name=${{ env.IMAGE_NAME }} \
             --set image.tag=${{ github.sha }} 
-
-    # - name: Description
-    #   run: |
-    #     <command>
