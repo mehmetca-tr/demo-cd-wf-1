@@ -1,7 +1,7 @@
 name: Check-Resource-Access
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 env:
   CLUSTER_NAME: contoso-video
